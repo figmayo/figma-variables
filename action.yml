@@ -1,0 +1,104 @@
+name: "Sync Figma Variables from FigMayo"
+description: "Fetches figma variables from FigMayo API and creates a PR to update them in your repo."
+author: "FigMayo"
+branding:
+  icon: "zap"
+  color: "blue"
+keywords:
+  - figmayo
+  - figma
+  - design-tokens
+  - variables
+  - github-action
+  - design-system
+  - token-sync
+  - automation
+  - figma-integration
+  - pull-request
+  - design-ops
+inputs:
+  gh-pat:
+    description: "GitHub personal access token for authenticating gh CLI."
+    required: true
+  figmayo-api-key:
+    description: "FigMayo API Key"
+    required: true
+  file-path:
+    description: "Path to save the figma variables JSON file"
+    required: true
+outputs:
+  pr-url:
+    description: "URL of the created pull request"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout Base Branch
+      uses: actions/checkout@v4
+
+    - name: Configure Git
+      shell: bash
+      run: |
+        git config --global user.name 'FigMayo Bot'
+        git config --global user.email 'support@figmayo.com'
+
+    - name: Generate Unique Branch Name
+      shell: bash
+      run: |
+        # Generate a branch name based on the ref and timestamp
+        BRANCH_NAME="figmayo/sync-figma-variables/${{ github.ref_name }}-$(date +'%Y%m%d%H%M%S' | tr -d '\n')"
+        echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+        echo "Generated branch name: $BRANCH_NAME"
+        git checkout -b $BRANCH_NAME
+
+    - name: Ensure Target Directory Exists
+      shell: bash
+      run: |
+        dir=$(dirname "${{ inputs.file-path }}")
+        mkdir -p "$dir" # Create the directory if it doesn't exist
+
+    - name: Fetch Figma Variables
+      shell: bash
+      run: |
+        curl -H "x-figmayo-key: ${{ inputs.figmayo-api-key }}" https://app.figmayo.com/api/v2/plugin/variables -o ${{ inputs.file-path }}
+
+    - name: Stage File for Git Diff
+      shell: bash
+      run: |
+        git add ${{ inputs.file-path }}
+
+    - name: Check for Changes
+      id: git-check
+      shell: bash
+      run: |
+        if git diff --cached --quiet; then
+          echo "changes=false" >> $GITHUB_ENV
+        else
+          echo "changes=true" >> $GITHUB_ENV
+        fi
+
+        # Debugging Output
+        echo "Changes detected: ${{ env.changes }}"
+
+    - name: Commit Changes
+      if: env.changes == 'true'
+      shell: bash
+      run: |
+        git add ${{ inputs.file-path }}
+        git commit -m "Updated Figma variables from FigMayo API"
+        git push origin ${{ env.BRANCH_NAME }}
+
+    - name: Authenticate GitHub CLI
+      if: env.changes == 'true'
+      shell: bash
+      run: echo "${{ inputs.gh-pat }}" | gh auth login --with-token
+
+    - name: Create Pull Request
+      if: env.changes == 'true'
+      shell: bash
+      run: |
+        gh pr create \
+          --base ${{ github.ref_name }} \
+          --head  ${{ env.BRANCH_NAME }} \
+          --title "Update Figma variables" \
+          --body  "This is a FigMayo automated PR raised by the sync-figma-variables action. It updates the Figma variables JSON from the FigMayo API."
