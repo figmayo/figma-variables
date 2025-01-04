@@ -62,7 +62,7 @@ runs:
         # Generate a branch name based on the ref and timestamp
         BRANCH_NAME="figmayo/sync-figma-variables/${{ github.ref_name }}-$(date +'%Y%m%d%H%M%S' | tr -d '\n')"
         echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
-        echo "branch-name=${{ BRANCH_NAME }}" >> $GITHUB_OUTPUT
+        echo "branch-name=$BRANCH_NAME" >> $GITHUB_OUTPUT
         echo "Generated branch name: $BRANCH_NAME"
 
         git checkout -b $BRANCH_NAME
