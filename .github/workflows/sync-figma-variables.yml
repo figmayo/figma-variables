@@ -17,4 +17,4 @@ jobs:
         with:
           gh-pat: ${{ secrets.GH_PAT }}
           figmayo-api-key: ${{ secrets.FIGMAYO_API_KEY }}
-          file-path: "test/design-tokens.json"
+          file-path: "test/figma-variables.json"

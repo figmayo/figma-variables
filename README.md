@@ -52,12 +52,9 @@ Before you can use this GHA you need to have your Figma variables pushed to a Fi
 
 ## Prerequisites
 
-Make sure you have synced your design system tokens from Figma Token Studio to a GitHub repo. You
-can follow [this](https://docs.tokens.studio/sync/github) guide to set it up.
+Make sure you have synced your Figma variables from the FigMayo plugin Token Studio to a GitHub repo. You
+can follow [this](https://help.figmayo.com/sites/PUCaV8RF/FigMayo-How-To-Guide/c/277:869?) guide to set it up.
 
-Once that is done, we need to setup GitHub Actions in that repo to generate the files using
-Weaver. If you're not familiar with setting up GitHub Actions, you can refer to their
-[quickstart](https://docs.github.com/en/actions/quickstart) guide before moving on.
 
 ## **Usage Example**
 
