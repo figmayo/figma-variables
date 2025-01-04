@@ -27,12 +27,17 @@ jobs:
       - name: Debug GITHUB_ENV
         shell: bash
         run: |
-          echo "Changes: ${{ steps.test-sync.outputs.changes }}"
-          echo "Branch Name: ${{ steps.test-sync.outputs.branch-name || 'No branch created' }}"
-          echo "PR URL: ${{ steps.test-sync.outputs.pr-url || 'No PR created' }}"
           echo "Changes: ${{ env.CHANGES }}"
           echo "Branch Name: ${{ env.BRANCH_NAME || 'No branch created' }}"
           echo "PR URL: ${{ env.PR_URL || 'No PR created' }}"
+
+      - name: Debug GITHUB_OUTPUT
+        shell: bash
+        run: |
+          echo "Changes: ${{ steps.test-sync.outputs.changes }}"
+          echo "Branch Name: ${{ steps.test-sync.outputs.branch-name || 'No branch created' }}"
+          echo "PR URL: ${{ steps.test-sync.outputs.pr-url || 'No PR created' }}"
+
   test-outputs:
     runs-on: ubuntu-latest
     needs: sync-figma-variables

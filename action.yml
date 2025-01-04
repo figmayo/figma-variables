@@ -23,7 +23,7 @@ outputs:
     value: ${{ steps.generate-branch-name.outputs.branch-name }}
   changes:
     description: "Indicates whether changes were detected. If this is false the pr-url and branch-name outputs will be empty."
-    value: ${{ steps.git-check.output.changes }}
+    value: ${{ steps.git-check.outputs.changes }}
 
 runs:
   using: "composite"
