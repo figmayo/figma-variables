@@ -6,6 +6,10 @@ on:
 jobs:
   sync-figma-variables:
     runs-on: ubuntu-latest
+    outputs:
+      changes: ${{ steps.test-sync.outputs.changes }}
+      branch-name: ${{ steps.test-sync.outputs.branch-name }}
+      pr-url: ${{ steps.test-sync.outputs.pr-url }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -20,7 +24,7 @@ jobs:
           figmayo-api-key: ${{ secrets.FIGMAYO_API_KEY }}
           file-path: "test/figma-variables.json"
 
-      - name: Debug Outputs
+      - name: Debug GITHUB_ENV
         shell: bash
         run: |
           echo "Changes: ${{ steps.test-sync.outputs.changes }}"
@@ -29,3 +33,8 @@ jobs:
           echo "Changes: ${{ env.CHANGES }}"
           echo "Branch Name: ${{ env.BRANCH_NAME || 'No branch created' }}"
           echo "PR URL: ${{ env.PR_URL || 'No PR created' }}"
+  test-outputs:
+    runs-on: ubuntu-latest
+    needs: sync-figma-variables
+    steps:
+      - run: echo '${{ toJSON(needs.sync-figma-variables.outputs) }}'

@@ -121,4 +121,4 @@ runs:
           --title "Update Figma variables" \
           --body  "This is a FigMayo automated PR raised by the sync-figma-variables action.")
         echo "PR URL: $PR_URL"
-        echo "pr-url=$PR_URL" >> $GITHUB_ENV
+        echo "PR_URL=$PR_URL" >> $GITHUB_ENV
