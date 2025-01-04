@@ -122,3 +122,11 @@ runs:
           --body  "This is a FigMayo automated PR raised by the sync-figma-variables action.")
         echo "PR URL: $PR_URL"
         echo "PR_URL=$PR_URL" >> $GITHUB_ENV
+
+    # Set Outputs
+    - name: Set Outputs
+      shell: bash
+      run: |
+        echo "branch-name=${{ env.BRANCH_NAME }}" >> $GITHUB_OUTPUT
+        echo "changes=${{ env.CHANGES }}" >> $GITHUB_OUTPUT
+        echo "pr-url=${{ env.PR_URL }}" >> $GITHUB_OUTPUT
