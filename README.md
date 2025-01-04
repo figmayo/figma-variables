@@ -24,13 +24,19 @@ Before you can use this GHA you need to have your Figma variables pushed to a Fi
 4. Paste your **API key** and the **share URL** of your Figma library into the plugin.
 5. Click **“Sync Library”** to publish your variables to FigMayo.
 
+👉 For more detailed guidance on the plugin, check the [FigMayo help](https://help.figmayo.com/sites/PUCaV8RF/FigMayo-How-To-Guide/c/277:869?).
+
 ### **3. Setup a GitHub Action**
 
-1. Visit [GitHub](https://github.com/settings/tokens) to create a PAT with Pull Request read/write permissions on your repo.
+1. Visit [GitHub](https://github.com/settings/personal-access-tokens) to create a PAT with Pull Request read/write permissions on your repo.
 2. Create the `github-pat` and `figmayo-api-key` [action secrets in the repo settings](https://docs.github.com/en/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions).
 3. [Create the workflow](https://docs.github.com/en/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions) as shown in the usage example below
 
-👉 For more detailed guidance on the plugin, check the [FigMayo help](https://help.figmayo.com/sites/PUCaV8RF/FigMayo-How-To-Guide/c/277:869?).
+👉 If your repo is owned by an organisation you probably need to create your PAT with the **organisation as the Resource Owner** and you might need to hit the **Enable SSO** button.
+
+## **FigMayo API**
+
+If you have published variables from many Figma libraries into your FigMayo documentation variables API will merge together all the variables into a single record of variable collections and variables. This is useful for resolving variables between libraries in your code but beware, it can blow up the size of the JSON file in large projects.
 
 ## **Inputs**
 
@@ -52,12 +58,8 @@ Before you can use this GHA you need to have your Figma variables pushed to a Fi
 
 ## Prerequisites
 
-Make sure you have synced your design system tokens from Figma Token Studio to a GitHub repo. You
-can follow [this](https://docs.tokens.studio/sync/github) guide to set it up.
-
-Once that is done, we need to setup GitHub Actions in that repo to generate the files using
-Weaver. If you're not familiar with setting up GitHub Actions, you can refer to their
-[quickstart](https://docs.github.com/en/actions/quickstart) guide before moving on.
+Make sure you have synced your Figma variables from the FigMayo plugin Token Studio to a GitHub repo. You
+can follow [this](https://help.figmayo.com/sites/PUCaV8RF/FigMayo-How-To-Guide/c/277:869?) guide to set it up.
 
 ## **Usage Example**
 
