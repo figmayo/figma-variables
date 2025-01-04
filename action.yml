@@ -33,6 +33,24 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - name: Validate Inputs
+      shell: bash
+      run: |
+        set -e
+        if [[ -z "${{ inputs.gh-pat }}" ]]; then
+          echo "❌ Error: 'gh-pat' input is required but not provided."
+          exit 1
+        fi
+
+        if [[ -z "${{ inputs.figmayo-api-key }}" ]]; then
+          echo "❌ Error: 'figmayo-api-key' input is required but not provided."
+          exit 1
+        fi
+
+        if [[ -z "${{ inputs.file-path }}" ]]; then
+          echo "❌ Error: 'file-path' input is required but not provided."
+          exit 1
+        fi
     - name: Checkout Base Branch
       uses: actions/checkout@v4
 
