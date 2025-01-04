@@ -38,7 +38,7 @@ runs:
       run: |
         set -e
         if [[ -z "${{ inputs.gh-pat }}" ]]; then
-          echo "❌ Error: 'gh-pat' input is required but not provided. Go here to create one https://github.com/settings/tokens"
+          echo "❌ Error: 'gh-pat' input is required but not provided. Go here to create one https://github.com/settings/personal-access-tokens"
           exit 1
         fi
 
