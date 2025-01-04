@@ -88,12 +88,12 @@ runs:
       shell: bash
       run: |
         if git diff --cached --quiet; then
-          echo "CHANGES=false" >> $GITHUB_ENV
-          echo "changes=false" >> $GITHUB_OUTPUT
+          CHANGES=false
         else
-          echo "CHANGES=true" >> $GITHUB_ENV
-          echo "changes=true" >> $GITHUB_OUTPUT
+          CHANGES=true
         fi
+        echo "CHANGES=$CHANGES" >> $GITHUB_ENV
+        echo "changes=$CHANGES" >> $GITHUB_OUTPUT
 
     - name: Debugging Output
       shell: bash
