@@ -25,18 +25,17 @@ outputs:
 runs:
   using: "composite"
   steps:
-    # Input Validation
     - name: Validate Inputs
       shell: bash
       run: |
         set -e
         if [[ -z "${{ inputs.gh-pat }}" ]]; then
-          echo "❌ Error: 'gh-pat' input is required but not provided."
+          echo "❌ Error: 'gh-pat' input is required but not provided. Go here to create one https://github.com/settings/personal-access-tokens"
           exit 1
         fi
 
         if [[ -z "${{ inputs.figmayo-api-key }}" ]]; then
-          echo "❌ Error: 'figmayo-api-key' input is required but not provided."
+          echo "❌ Error: 'figmayo-api-key' input is required but not provided. Go here to create one https://app.figmayo.com/api/v2/settings"
           exit 1
         fi
 
@@ -44,41 +43,36 @@ runs:
           echo "❌ Error: 'file-path' input is required but not provided."
           exit 1
         fi
-
-    # Checkout the Code
     - name: Checkout Base Branch
       uses: actions/checkout@v4
 
-    # Git Configuration
     - name: Configure Git
       shell: bash
       run: |
         git config --global user.name 'FigMayo Bot'
         git config --global user.email 'support@figmayo.com'
 
-    # Generate Branch Name
     - name: Generate Unique Branch Name
       shell: bash
       run: |
+        # Generate a branch name based on the ref and timestamp
         BRANCH_NAME="figmayo/sync-figma-variables/${{ github.ref_name }}-$(date +'%Y%m%d%H%M%S' | tr -d '\n')"
         echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
         echo "Generated branch name: $BRANCH_NAME"
+
         git checkout -b $BRANCH_NAME
 
-    # Ensure Target Directory Exists
     - name: Ensure Target Directory Exists
       shell: bash
       run: |
         dir=$(dirname "${{ inputs.file-path }}")
-        mkdir -p "$dir"
+        mkdir -p "$dir" # Create the directory if it doesn't exist
 
-    # Fetch Figma Variables
     - name: Fetch Figma Variables
       shell: bash
       run: |
         curl -H "x-figmayo-key: ${{ inputs.figmayo-api-key }}" https://app.figmayo.com/api/v2/plugin/variables -o ${{ inputs.file-path }}
 
-    # Stage File and Check for Changes
     - name: Stage File for Git Diff
       shell: bash
       run: |
@@ -93,15 +87,25 @@ runs:
         else
           echo "CHANGES=true" >> $GITHUB_ENV
         fi
+
+    - name: Debugging Output
+      shell: bash
+      run: |
+        # Debugging Output
         echo "Changes detected: ${{ env.CHANGES }}"
 
-    # Commit Changes
     - name: Commit Changes
       if: env.CHANGES == 'true'
       shell: bash
       run: |
+        git add ${{ inputs.file-path }}
         git commit -m "Updated Figma variables from FigMayo API"
         git push origin ${{ env.BRANCH_NAME }}
+
+    - name: Authenticate GitHub CLI
+      if: env.CHANGES == 'true'
+      shell: bash
+      run: echo "${{ inputs.gh-pat }}" | gh auth login --with-token
 
     # Create Pull Request
     - name: Create Pull Request
