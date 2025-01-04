@@ -17,10 +17,13 @@ inputs:
 outputs:
   pr-url:
     description: "URL of the created pull request"
+    value: ${{ env.PR_URL }}
   branch-name:
     description: "Name of the branch created for the PR"
+    value: ${{ env.BRANCH_NAME }}
   changes:
     description: "Indicates whether changes were detected. If this is false the pr-url and branch-name outputs will be empty."
+    value: ${{ env.CHANGES }}
 
 runs:
   using: "composite"
@@ -119,11 +122,3 @@ runs:
           --body  "This is a FigMayo automated PR raised by the sync-figma-variables action.")
         echo "PR URL: $PR_URL"
         echo "pr-url=$PR_URL" >> $GITHUB_ENV
-
-    # Set Outputs
-    - name: Set Outputs
-      shell: bash
-      run: |
-        echo "branch-name=${{ env.BRANCH_NAME }}" >> $GITHUB_OUTPUT
-        echo "changes=${{ env.CHANGES }}" >> $GITHUB_OUTPUT
-        echo "pr-url=${{ env.CHANGES == 'true' && env.PR_URL || '' }}" >> $GITHUB_OUTPUT
