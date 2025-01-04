@@ -1,4 +1,4 @@
-name: Sync Figma Variables Action
+name: Test Sync Figma Variables Composite Action
 
 on:
   workflow_dispatch: # Allows manual execution
@@ -13,8 +13,16 @@ jobs:
           fetch-depth: 0
 
       - name: Test Sync Figma Variables
+        id: test-sync
         uses: ./
         with:
           gh-pat: ${{ secrets.GH_PAT }}
           figmayo-api-key: ${{ secrets.FIGMAYO_API_KEY }}
           file-path: "test/figma-variables.json"
+
+      - name: Debug Outputs
+        shell: bash
+        run: |
+          echo "Changes: ${{ steps.test-sync.outputs.changes }}"
+          echo "Branch Name: ${{ steps.test-sync.outputs.branch-name || 'No branch created' }}"
+          echo "PR URL: ${{ steps.test-sync.outputs.pr-url || 'No PR created' }}"

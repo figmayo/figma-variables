@@ -17,21 +17,26 @@ inputs:
 outputs:
   pr-url:
     description: "URL of the created pull request"
+  branch-name:
+    description: "Name of the branch created for the PR"
+  changes:
+    description: "Indicates whether changes were detected. If this is false the pr-url and branch-name outputs will be empty."
 
 runs:
   using: "composite"
   steps:
+    # Input Validation
     - name: Validate Inputs
       shell: bash
       run: |
         set -e
         if [[ -z "${{ inputs.gh-pat }}" ]]; then
-          echo "❌ Error: 'gh-pat' input is required but not provided. Go here to create one https://github.com/settings/personal-access-tokens"
+          echo "❌ Error: 'gh-pat' input is required but not provided."
           exit 1
         fi
 
         if [[ -z "${{ inputs.figmayo-api-key }}" ]]; then
-          echo "❌ Error: 'figmayo-api-key' input is required but not provided. Go here to create one https://app.figmayo.com/api/v2/settings"
+          echo "❌ Error: 'figmayo-api-key' input is required but not provided."
           exit 1
         fi
 
@@ -39,35 +44,41 @@ runs:
           echo "❌ Error: 'file-path' input is required but not provided."
           exit 1
         fi
+
+    # Checkout the Code
     - name: Checkout Base Branch
       uses: actions/checkout@v4
 
+    # Git Configuration
     - name: Configure Git
       shell: bash
       run: |
         git config --global user.name 'FigMayo Bot'
         git config --global user.email 'support@figmayo.com'
 
+    # Generate Branch Name
     - name: Generate Unique Branch Name
       shell: bash
       run: |
-        # Generate a branch name based on the ref and timestamp
         BRANCH_NAME="figmayo/sync-figma-variables/${{ github.ref_name }}-$(date +'%Y%m%d%H%M%S' | tr -d '\n')"
         echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
         echo "Generated branch name: $BRANCH_NAME"
         git checkout -b $BRANCH_NAME
 
+    # Ensure Target Directory Exists
     - name: Ensure Target Directory Exists
       shell: bash
       run: |
         dir=$(dirname "${{ inputs.file-path }}")
-        mkdir -p "$dir" # Create the directory if it doesn't exist
+        mkdir -p "$dir"
 
+    # Fetch Figma Variables
     - name: Fetch Figma Variables
       shell: bash
       run: |
         curl -H "x-figmayo-key: ${{ inputs.figmayo-api-key }}" https://app.figmayo.com/api/v2/plugin/variables -o ${{ inputs.file-path }}
 
+    # Stage File and Check for Changes
     - name: Stage File for Git Diff
       shell: bash
       run: |
@@ -78,33 +89,38 @@ runs:
       shell: bash
       run: |
         if git diff --cached --quiet; then
-          echo "changes=false" >> $GITHUB_ENV
+          echo "CHANGES=false" >> $GITHUB_ENV
         else
-          echo "changes=true" >> $GITHUB_ENV
+          echo "CHANGES=true" >> $GITHUB_ENV
         fi
+        echo "Changes detected: ${{ env.CHANGES }}"
 
-        # Debugging Output
-        echo "Changes detected: ${{ env.changes }}"
-
+    # Commit Changes
     - name: Commit Changes
-      if: env.changes == 'true'
+      if: env.CHANGES == 'true'
       shell: bash
       run: |
-        git add ${{ inputs.file-path }}
         git commit -m "Updated Figma variables from FigMayo API"
         git push origin ${{ env.BRANCH_NAME }}
 
-    - name: Authenticate GitHub CLI
-      if: env.changes == 'true'
-      shell: bash
-      run: echo "${{ inputs.gh-pat }}" | gh auth login --with-token
-
+    # Create Pull Request
     - name: Create Pull Request
-      if: env.changes == 'true'
+      if: env.CHANGES == 'true'
       shell: bash
       run: |
-        gh pr create \
+        PR_URL=$(gh pr create \
           --base ${{ github.ref_name }} \
           --head  ${{ env.BRANCH_NAME }} \
           --title "Update Figma variables" \
-          --body  "This is a FigMayo automated PR raised by the sync-figma-variables action. It updates the Figma variables JSON from the FigMayo API."
+          --body  "This is a FigMayo automated PR raised by the sync-figma-variables action." \
+          --json url -q ".url")
+        echo "PR URL: $PR_URL"
+        echo "pr-url=$PR_URL" >> $GITHUB_ENV
+
+    # Set Outputs
+    - name: Set Outputs
+      shell: bash
+      run: |
+        echo "branch-name=${{ env.BRANCH_NAME }}" >> $GITHUB_OUTPUT
+        echo "changes=${{ env.CHANGES }}" >> $GITHUB_OUTPUT
+        echo "pr-url=${{ env.CHANGES == 'true' && env.PR_URL || '' }}" >> $GITHUB_OUTPUT

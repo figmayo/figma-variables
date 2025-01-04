@@ -1,5 +1,3 @@
-# Sync Figma Variables from FigMayo
-
 This GitHub Action fetches **Figma variables** from the **FigMayo API**, commits a JSON file to a branch in your repository, and creates a **pull request** if changes are detected.
 
 It's designed to be manually invoked to let non-technical contributors make updates to Figma variables in the codebase via the GitHub UI.
