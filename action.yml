@@ -17,13 +17,13 @@ inputs:
 outputs:
   pr-url:
     description: "URL of the created pull request"
-    value: ${{ env.PR_URL }}
+    value: ${{ steps.create-pr.outputs.pr-url }}
   branch-name:
     description: "Name of the branch created for the PR"
-    value: ${{ env.BRANCH_NAME }}
+    value: ${{ steps.generate-branch-name.outputs.branch-name }}
   changes:
     description: "Indicates whether changes were detected. If this is false the pr-url and branch-name outputs will be empty."
-    value: ${{ env.CHANGES }}
+    value: ${{ steps.git-check.output.changes }}
 
 runs:
   using: "composite"
@@ -57,10 +57,12 @@ runs:
 
     - name: Generate Unique Branch Name
       shell: bash
+      id: generate-branch-name
       run: |
         # Generate a branch name based on the ref and timestamp
         BRANCH_NAME="figmayo/sync-figma-variables/${{ github.ref_name }}-$(date +'%Y%m%d%H%M%S' | tr -d '\n')"
         echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+        echo "branch-name=${{ BRANCH_NAME }}" >> $GITHUB_OUTPUT
         echo "Generated branch name: $BRANCH_NAME"
 
         git checkout -b $BRANCH_NAME
@@ -87,8 +89,10 @@ runs:
       run: |
         if git diff --cached --quiet; then
           echo "CHANGES=false" >> $GITHUB_ENV
+          echo "changes=false" >> $GITHUB_OUTPUT
         else
           echo "CHANGES=true" >> $GITHUB_ENV
+          echo "changes=true" >> $GITHUB_OUTPUT
         fi
 
     - name: Debugging Output
@@ -113,6 +117,7 @@ runs:
     # Create Pull Request
     - name: Create Pull Request
       if: env.CHANGES == 'true'
+      id: create-pr
       shell: bash
       run: |
         PR_URL=$(gh pr create \
@@ -122,11 +127,4 @@ runs:
           --body  "This is a FigMayo automated PR raised by the sync-figma-variables action.")
         echo "PR URL: $PR_URL"
         echo "PR_URL=$PR_URL" >> $GITHUB_ENV
-
-    # Set Outputs
-    - name: Set Outputs
-      shell: bash
-      run: |
-        echo "branch-name=${{ env.BRANCH_NAME }}" >> $GITHUB_OUTPUT
-        echo "changes=${{ env.CHANGES }}" >> $GITHUB_OUTPUT
-        echo "pr-url=${{ env.PR_URL }}" >> $GITHUB_OUTPUT
+        echo "pr-url=$PR_URL" >> $GITHUB_OUTPUT
