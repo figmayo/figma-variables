@@ -48,9 +48,13 @@ If you have published variables from many Figma libraries into your FigMayo docu
 
 ## **Outputs**
 
-| Output   | Description                                     |
-| -------- | ----------------------------------------------- |
-| `pr-url` | URL of the pull request created for the update. |
+| Output        | Description                                                                 |
+| ------------- | --------------------------------------------------------------------------- |
+| `branch-name` | Name of the generated branch should you need to commit any further changes. |
+| `changes`     | Flag to indicate if any changes to the variables JSON were detected.        |
+| `pr-url`      | URL of the pull request created for the update.                             |
+
+👉 The outputs are useful should you need to do any further work to format code or run any transforms on the variables JSON and commit these to the PR branch.
 
 ---
 
@@ -73,7 +77,7 @@ jobs:
   sync-tokens:
     runs-on: ubuntu-latest
     steps:
-      - uses: figmayo/figmayo-public/actions/sync-figma-variables@sync-figma-variables@v1.0.0
+      - uses: figmayo/figma-variables@v1.0.2
         with:
           github-pat: ${{ secrets.GH_PAT }}
           figmayo-api-key: ${{ secrets.FIGMAYO_API_KEY }}
