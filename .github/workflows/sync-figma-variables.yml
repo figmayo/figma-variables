@@ -11,11 +11,6 @@ jobs:
       branch-name: ${{ steps.test-sync.outputs.branch-name }}
       pr-url: ${{ steps.test-sync.outputs.pr-url }}
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
       - name: Test Sync Figma Variables
         id: test-sync
         uses: ./
